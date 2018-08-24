@@ -33,6 +33,7 @@ beforeEach('Add test data', function(done) {
     comments: [
       { comment: 'great book' }
     ],
+    commentcount: 1,
     test: true
   }, done);
 });
@@ -106,7 +107,7 @@ suite('Functional Tests', function() {
             assert.isArray(res.body);
             assert.property(res.body[0], 'title');
             assert.property(res.body[0], '_id');
-            assert.property(res.body[0], 'commentCount');
+            assert.property(res.body[0], 'commentcount');
             done();
           });
       });      
@@ -137,6 +138,7 @@ suite('Functional Tests', function() {
             assert.equal(res.body.title, 'test title');
             assert.isArray(res.body.comments);
             assert.equal(res.body.comments[0].comment, 'great book');
+            assert.equal(res.body.commentcount, 1);
             done();
           });
       });
@@ -158,6 +160,7 @@ suite('Functional Tests', function() {
             assert.isArray(res.body.comments);
             assert.equal(res.body.comments[0].comment, 'great book');
             assert.equal(res.body.comments[1].comment, 'tragic');
+            assert.equal(res.body.commentcount, 2);
             done();
           });
       });
