@@ -74,18 +74,19 @@ module.exports = function (app, db) {
       }
       catch (x) {
         return res.sendStatus(500)
-      }
+      } 
       db.collection('books').findOneAndUpdate(
         { _id: oid },
         {
           $push: { comments: { comment }},
           $inc: { commentcount: 1 }
         },
+        { returnOriginal: false },
         (err, r) => {
           res.json(r.value);
         });
     })
-    
+     
     .delete(function(req, res){
       var bookid = req.params.id;
       let oid
