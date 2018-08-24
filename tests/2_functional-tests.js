@@ -17,12 +17,28 @@ chai.use(chaiHttp);
 /* global before beforeEach afterEach suite test */
 
 let db
-
+ 
 before('Init DB', function(done) {
   mongo.connect(process.env.DB, (err, _db) => {
     if (err) throw err;
-    db = _db
+    db = _db;
+    done();
   });
+});
+
+beforeEach('Add test data', function(done) {
+  db.collection('books').insertOne({
+    _id: 'testid',
+    title: 'test title',
+    comments: [
+      { comment: 'great book' }
+    ],
+    test: true
+  }, done);
+});
+
+afterEach('Remove test data', function(done) {
+  db.collection('books').deleteMany({ test: true }, done);
 });
 
 suite('Functional Tests', function() {
@@ -100,14 +116,6 @@ suite('Functional Tests', function() {
 
     suite('GET /api/books/[id] => book object with [id]', function(){
       
-      beforeEach('Add test data', function(done) {
-        db.collection('books').insertOne({ _id: 'test', title: 'test' }, done);
-      });
-
-      afterEach('Remove test data', function(done) {
-        db.collection('books').deleteMany({ }, done);
-      });
-      
       test('Test GET /api/books/[id] with id not in db',  function(done){
         chai.request(server)
           .get('/api/books/invalid')
@@ -121,13 +129,14 @@ suite('Functional Tests', function() {
       
       test('Test GET /api/books/[id] with valid id in db',  function(done){
         chai.request(server)
-          .get('/api/books/test')
+          .get('/api/books/test title')
           .end((err, res) => {
             if (err) throw err;
             assert.equal(res.status, 200);
-            assert.equal(res.body.title, 'test');
-            assert.equal(res.body._id, _id);
+            assert.equal(res.body._id, 'testid');
+            assert.equal(res.body.title, 'test title');
             assert.isArray(res.body.comments);
+            assert.equal(res.body.comments[0].comment, 'great book');
             done();
           });
       });
@@ -138,7 +147,19 @@ suite('Functional Tests', function() {
     suite('POST /api/books/[id] => add comment/expect book object with id', function(){
       
       test('Test POST /api/books/[id] with comment', function(done){
-        //done();
+        chai.request(server)
+          .post('/api/books/test title')
+          .send({ comment: 'tragic' })
+          .end((err, res) => {
+            if (err) throw err;
+            assert.equal(res.status, 200);
+            assert.equal(res.body._id, 'testid');
+            assert.equal(res.body.title, 'test title');
+            assert.isArray(res.body.comments);
+            assert.equal(res.body.comments[0].comment, 'great book');
+            assert.equal(res.body.comments[1].comment, 'tragic');
+            done();
+          });
       });
       
     });
