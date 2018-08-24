@@ -9,6 +9,7 @@
 'use strict';
 
 var expect = require('chai').expect;
+var ObjectID = require('mongodb').ObjectID;
 
 module.exports = function (app, db) {
 
@@ -49,10 +50,10 @@ module.exports = function (app, db) {
     .get(function (req, res){
       var bookid = req.params.id;
       //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
-      db.collection('books').findOne({ _id: bookid }, (err, book) => {
+      db.collection('books').findOne({ _id: new ObjectID(bookid) }, (err, book) => {
         if (err) return res.sendStatus(500);
         if (!book) return res.status(400).send('no book exists');
-        res.status(200).json(book);
+        res.json(book);
       });
     })
      

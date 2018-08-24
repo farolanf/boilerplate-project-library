@@ -16,7 +16,7 @@ chai.use(chaiHttp);
 
 /* global before beforeEach afterEach suite test */
 
-let db
+let db, bookId
  
 before('Init DB', function(done) {
   mongo.connect(process.env.DB, (err, _db) => {
@@ -34,7 +34,11 @@ beforeEach('Add test data', function(done) {
     ],
     commentcount: 1,
     test: true
-  }, done);
+  }, (err, r) => {
+    if (err) throw err;
+    bookId = r.ops[0]._id
+    done();
+  });
 });
 
 afterEach('Remove test data', function(done) {
@@ -117,7 +121,6 @@ suite('Functional Tests', function() {
         chai.request(server)
           .get('/api/books/invalid')
           .end((err, res) => {
-            assert.equal(res.status, 400);
             assert.equal(res.text, 'no book exists');
             done();
           });
@@ -125,10 +128,10 @@ suite('Functional Tests', function() {
       
       test('Test GET /api/books/[id] with valid id in db',  function(done){
         chai.request(server)
-          .get('/api/books/test title')
+          .get('/api/books/' + bookId)
           .end((err, res) => {
             assert.equal(res.status, 200);
-            assert.property(res.body, '_id');
+            assert.equal(res.body._id, bookId);
             assert.equal(res.body.title, 'test title');
             assert.isArray(res.body.comments);
             assert.equal(res.body.comments[0].comment, 'great book');
@@ -138,17 +141,17 @@ suite('Functional Tests', function() {
       });
       
     });
-
+ 
 
     suite('POST /api/books/[id] => add comment/expect book object with id', function(){
       
       test('Test POST /api/books/[id] with comment', function(done){
         chai.request(server)
-          .post('/api/books/test title')
+          .post('/api/books/' + bookId)
           .send({ comment: 'tragic' })
           .end((err, res) => {
             assert.equal(res.status, 200);
-            assert.property(res.body, '_id');
+            assert.equal(res.body._id, bookId);
             assert.equal(res.body.title, 'test title');
             assert.isArray(res.body.comments);
             assert.equal(res.body.comments[0].comment, 'great book');
