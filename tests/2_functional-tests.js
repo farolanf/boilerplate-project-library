@@ -13,6 +13,8 @@ var server = require('../server');
 
 chai.use(chaiHttp);
 
+/* global suite test */
+
 suite('Functional Tests', function() {
 
   /*
@@ -41,7 +43,13 @@ suite('Functional Tests', function() {
     suite('POST /api/books with title => create book object/expect book object', function() {
       
       test('Test POST /api/books with title', function(done) {
-        //done();
+        chai.request(server)
+          .post('/api/books')
+          .send({ title: 'book title' })
+          .end((err, res) => {
+            if (err) throw err
+            ass
+          });
       });
       
       test('Test POST /api/books with no title given', function(done) {
