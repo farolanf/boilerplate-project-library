@@ -29,9 +29,7 @@ before('Init DB', function(done) {
 beforeEach('Add test data', function(done) {
   db.collection('books').insertOne({
     title: 'test title',
-    comments: [
-      { comment: 'great book' }
-    ],
+    comments: ['great book'],
     commentcount: 1,
     test: true
   }, (err, r) => {
@@ -134,7 +132,7 @@ suite('Functional Tests', function() {
             assert.equal(res.body._id, bookId);
             assert.equal(res.body.title, 'test title');
             assert.isArray(res.body.comments);
-            assert.equal(res.body.comments[0].comment, 'great book');
+            assert.equal(res.body.comments[0], 'great book');
             assert.equal(res.body.commentcount, 1);
             done();
           });
@@ -154,8 +152,8 @@ suite('Functional Tests', function() {
             assert.equal(res.body._id, bookId);
             assert.equal(res.body.title, 'test title');
             assert.isArray(res.body.comments);
-            assert.equal(res.body.comments[0].comment, 'great book');
-            assert.equal(res.body.comments[1].comment, 'tragic');
+            assert.equal(res.body.comments[0], 'great book');
+            assert.equal(res.body.comments[1], 'tragic');
             assert.equal(res.body.commentcount, 2);
             done();
           });

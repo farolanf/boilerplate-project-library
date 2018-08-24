@@ -78,7 +78,7 @@ module.exports = function (app, db) {
       db.collection('books').findOneAndUpdate(
         { _id: oid },
         {
-          $push: { comments: { comment }},
+          $push: { comments: comment },
           $inc: { commentcount: 1 }
         },
         { returnOriginal: false },
