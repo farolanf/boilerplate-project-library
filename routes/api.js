@@ -34,9 +34,13 @@ module.exports = function (app, db) {
         res.json(r.ops[0]);
       });
     })
-    
+     
     .delete(function(req, res){
       //if successful response will be 'complete delete successful'
+      db.collection('books').deleteMany({}, err => {
+        if (err) return res.sendStatus(500);
+        res.status(200).send('complete delete successful');
+      });
     });
 
 
@@ -45,8 +49,13 @@ module.exports = function (app, db) {
     .get(function (req, res){
       var bookid = req.params.id;
       //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
+      db.collection('books').findOne({ _id: bookid }, (err, book) => {
+        if (err) return res.sendStatus(500);
+        if (!book) return res.status(400).send('no book exists');
+        res.status(200).json(book);
+      });
     })
-    
+     
     .post(function(req, res){
       var bookid = req.params.id;
       var comment = req.body.comment;

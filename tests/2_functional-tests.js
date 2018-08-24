@@ -25,10 +25,9 @@ before('Init DB', function(done) {
     done();
   });
 });
-
+ 
 beforeEach('Add test data', function(done) {
   db.collection('books').insertOne({
-    _id: 'testid',
     title: 'test title',
     comments: [
       { comment: 'great book' }
@@ -74,7 +73,6 @@ suite('Functional Tests', function() {
           .post('/api/books')
           .send({ title: 'book title' })
           .end((err, res) => {
-            if (err) throw err;
             assert.equal(res.status, 200);
             assert.equal(res.body.title, 'book title');
             assert.property(res.body, '_id');
@@ -87,7 +85,6 @@ suite('Functional Tests', function() {
           .post('/api/books')
           .send({})
           .end((err, res) => {
-            if (err) throw err;
             assert.equal(res.status, 400);
             done();
           });
@@ -102,7 +99,6 @@ suite('Functional Tests', function() {
         chai.request(server)
           .get('/api/books')
           .end((err, res) => {
-            if (err) throw err;
             assert.equal(res.status, 200);
             assert.isArray(res.body);
             assert.property(res.body[0], 'title');
@@ -121,7 +117,6 @@ suite('Functional Tests', function() {
         chai.request(server)
           .get('/api/books/invalid')
           .end((err, res) => {
-            if (err) throw err;
             assert.equal(res.status, 400);
             assert.equal(res.text, 'no book exists');
             done();
@@ -132,9 +127,8 @@ suite('Functional Tests', function() {
         chai.request(server)
           .get('/api/books/test title')
           .end((err, res) => {
-            if (err) throw err;
             assert.equal(res.status, 200);
-            assert.equal(res.body._id, 'testid');
+            assert.property(res.body, '_id');
             assert.equal(res.body.title, 'test title');
             assert.isArray(res.body.comments);
             assert.equal(res.body.comments[0].comment, 'great book');
@@ -153,9 +147,8 @@ suite('Functional Tests', function() {
           .post('/api/books/test title')
           .send({ comment: 'tragic' })
           .end((err, res) => {
-            if (err) throw err;
             assert.equal(res.status, 200);
-            assert.equal(res.body._id, 'testid');
+            assert.property(res.body, '_id');
             assert.equal(res.body.title, 'test title');
             assert.isArray(res.body.comments);
             assert.equal(res.body.comments[0].comment, 'great book');
