@@ -45,12 +45,19 @@ module.exports = function (app, db) {
     });
 
 
-
+ 
   app.route('/api/books/:id')
     .get(function (req, res){
       var bookid = req.params.id;
+      let oid
+      try {
+        oid = new ObjectID(bookid)
+      }
+      catch (x) {
+        return res.status(400).send('no book exists');
+      }
       //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
-      db.collection('books').findOne({ _id: new ObjectID(bookid) }, (err, book) => {
+      db.collection('books').findOne({ _id: oid }, (err, book) => {
         if (err) return res.sendStatus(500);
         if (!book) return res.status(400).send('no book exists');
         res.json(book);
@@ -60,12 +67,39 @@ module.exports = function (app, db) {
     .post(function(req, res){
       var bookid = req.params.id;
       var comment = req.body.comment;
+      let oid
       //json res format same as .get
+      try {
+        oid = new ObjectID(bookid)
+      }
+      catch (x) {
+        return res.sendStatus(500)
+      }
+      db.collection('books').findOneAndUpdate(
+        { _id: oid },
+        {
+          $push: { comments: { comment }},
+          $inc: { commentcount: 1 }
+        },
+        (err, r) => {
+          res.json(r.value);
+        });
     })
     
     .delete(function(req, res){
       var bookid = req.params.id;
+      let oid
       //if successful response will be 'delete successful'
+      try {
+        oid = new ObjectID(bookid)
+      }
+      catch (x) {
+        return res.sendStatus(500)
+      }
+      db.collection('books').deleteOne({ _id: oid }, err => {
+        if (err) return res.sendStatus(500);
+        res.status(200).send('delete successful');
+      });
     });
   
 };
