@@ -9,11 +9,21 @@
 var chaiHttp = require('chai-http');
 var chai = require('chai');
 var assert = chai.assert;
+var mongo = require('mongodb');
 var server = require('../server');
 
 chai.use(chaiHttp);
 
-/* global suite test */
+/* global before beforeEach afterEach suite test */
+
+let db
+
+before('Init DB', function(done) {
+  mongo.connect(process.env.DB, (err, _db) => {
+    if (err) throw err;
+    db = _db
+  });
+});
 
 suite('Functional Tests', function() {
 
@@ -90,13 +100,36 @@ suite('Functional Tests', function() {
 
     suite('GET /api/books/[id] => book object with [id]', function(){
       
+      beforeEach('Add test data', function(done) {
+        db.collection('books').insertOne({ _id: 'test', title: 'test' }, done);
+      });
+
+      afterEach('Remove test data', function(done) {
+        db.collection('books').deleteMany({ }, done);
+      });
+      
       test('Test GET /api/books/[id] with id not in db',  function(done){
         chai.request(server)
-          .get('/api/books/'
+          .get('/api/books/invalid')
+          .end((err, res) => {
+            if (err) throw err;
+            assert.equal(res.status, 400);
+            assert.equal(res.text, 'no book exists');
+            done();
+          });
       });
       
       test('Test GET /api/books/[id] with valid id in db',  function(done){
-        //done();
+        chai.request(server)
+          .get('/api/books/test')
+          .end((err, res) => {
+            if (err) throw err;
+            assert.equal(res.status, 200);
+            assert.equal(res.body.title, 'test');
+            assert.equal(res.body._id, _id);
+            assert.isArray(res.body.comments);
+            done();
+          });
       });
       
     });
